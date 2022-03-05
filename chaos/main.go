@@ -11,19 +11,22 @@ type ChaosParams struct {
 	k float64
 }
 
-func GetParms(fs *flag.FlagSet) *ChaosParams {
+func GetParams(args []string) *ChaosParams {
+	fs := flag.NewFlagSet("chaos", flag.ExitOnError)
+	fs.Parse(args)
 	param := ChaosParams{}
-
 	x, err := strconv.ParseFloat(fs.Arg(0), 64)
 	if err != nil {
-		param.x = x
+		fmt.Println(err)
 		return &param
 	}
+	param.x = x
 	param.k, err = strconv.ParseFloat(fs.Arg(1), 64)
+	if err != nil {fmt.Println(err)}
 	return &param
 }
 
-func Chaos(fs *flag.FlagSet) {
-	params := GetParms(fs)
+func Chaos(args []string) {
+	params := GetParams(args)
 	fmt.Println("CHAOSSS", params)
 }

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"github.com/Jeadie/math/chaos"
+	"os"
 )
 
 const (
@@ -10,10 +10,9 @@ const (
 )
 
 func main() {
-
-	switch flag.Arg(0) {
+	switch os.Args[1] {
 		case Chaos:
-			chaos.Chaos(flag.NewFlagSet(Chaos, flag.ExitOnError))
+			chaos.Chaos(os.Args[2:])
 	}
 
 }
