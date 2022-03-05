@@ -13,7 +13,7 @@ type ChaosParams struct {
 	initalIter uint
 	dy float64
 	n uint
-	maxPeriod uint
+	maxSeriesLen uint
 }
 
 func GetFlagAndParams(p *ChaosParams) *flag.FlagSet {
@@ -21,7 +21,7 @@ func GetFlagAndParams(p *ChaosParams) *flag.FlagSet {
 	fs.Float64Var(&p.x, "x", 0.42, "Parameter of the recursive formula kx**2 -1")
 	fs.Float64Var(&p.k, "k", 1.24, "Parameter of the recursive formula kx**2 -1")
 	fs.UintVar(&p.initalIter, "initial-iterations", 50, "Number of initial iterations before considering output")
-	fs.UintVar(&p.maxPeriod, "maxPeriod", 9, "Max size of perioidicity under consideration. Periodicity greater than this will be considered chaotic")
+	fs.UintVar(&p.maxSeriesLen, "maxSeriesLen", 9, "Size of series to consider periodicities and other patterns within. Patterns greater than this will be considered chaotic")
 	fs.Float64Var(&p.dy, "delta", 0.001, "delta between iterations before halting (after initialIter), if not terminated for cyclic nature")
 	return fs
 }
@@ -49,67 +49,36 @@ func Chaos(args []string) {
 func Run(p *ChaosParams) {
 	x := p.x
 	k := p.k
-	state := ConstructIterationState(p)
-	state.AddIteration(x)
-
+	// Allow pattern to stabilise
 	for i := uint(0); i < p.initalIter; i++ {
 		x = k*math.Pow(x, 2) - 1.0
-		state.AddIteration(x)
 	}
 
+	state := ConstructIterationState(p)
 	newX := x
-	for !state.isFinished() {
+	for i := state.ttl; i >0; i-- {
 		newX = k*math.Pow(x, 2) - 1.0
 		state.AddIteration(newX)
-		state.ttl -=1
 		x = newX
-		fmt.Println(state.ttl, state.previousN)
 	}
-	fmt.Println(state.status, state.previousN)
+	state.UpdatePattern()
+	fmt.Println(state.pattern)
 }
-
-// StateChecks is list of functions where the i'th State check returns true iff status is IterationStatus(i)
-var StateChecks = []func(*IterationState) bool{isFalse, isConvergent, isFalse, isFalse, isChaotic, isTrue}
-type IterationStatus int64
-const (
-	Divergent IterationStatus = iota
-	Convergent
-	Periodic
-	Intermittency
-	Chaotic
-	Incomplete
-)
-
-func isFalse(s *IterationState) bool { return false }
-func isTrue(s *IterationState) bool { return true }
-
-func isChaotic(s *IterationState) bool {
-	return s.ttl <= 0
-}
-
-func isConvergent(s *IterationState) bool {
-	if s.k == 0 {
-		return math.Abs(s.previousN[s.k] - s.previousN[len(s.previousN)-1]) < s.dy
-	}
-	return math.Abs(s.previousN[s.k] - s.previousN[s.k-1]) < s.dy
-}
-
 
 func ConstructIterationState(p *ChaosParams) *IterationState{
-	previousN := make([]float64, p.maxPeriod)
+	previousN := make([]float64, p.maxSeriesLen)
 	return &IterationState{
-		status:    Incomplete,
 		dy:        p.dy,
 		previousN: previousN,
 		k:         0,
-		n:         int(p.maxPeriod),
-		ttl: p.maxPeriod,
+		n:         int(p.maxSeriesLen),
+		ttl: p.maxSeriesLen,
 	}
 }
 
 type IterationState struct {
-	status IterationStatus
-	dy float64
+	pattern SeriesPattern
+	dy      float64
 	ttl uint
 
 	// Basic ring, of N most previous elements
@@ -118,26 +87,20 @@ type IterationState struct {
 	n int
 }
 
-func (s *IterationState) isFinished() bool {
-	return s.status != Incomplete
-}
-
-// AddIteration adds the value to the previous list, and checks if the iteration status has changed.
+// AddIteration adds the value to the previous list, and checks if the iteration pattern has changed.
 func (s *IterationState) AddIteration(x float64) {
 	// Add x into previous N
 	s.previousN[s.k] = x
 	s.k++
-	if s.k >= s.n {
-		s.k -= s.n
-	}
+}
 
-	// Check for status changes, exit on first
-	for i, fn := range StateChecks {
-		if fn(s) {
-			s.status = IterationStatus(i)
-			break
+func (s *IterationState) UpdatePattern() {
+	// Check for pattern changes, exit on first
+	for i, fn := range SeriesChecks {
+		if fn(s.previousN) {
+			s.pattern = SeriesPattern(i)
+			return
 		}
 	}
-
 }
 
