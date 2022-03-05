@@ -1,10 +1,19 @@
 package main
 
 import (
-	"chaos"
 	"flag"
+	"github.com/Jeadie/math/chaos"
+)
+
+const (
+	Chaos string = "chaos"
 )
 
 func main() {
-	chaosCmd := chaos.GetFlagSet("chaos")
+
+	switch flag.Arg(0) {
+		case Chaos:
+			chaos.Chaos(flag.NewFlagSet(Chaos, flag.ExitOnError))
+	}
+
 }
