@@ -9,7 +9,6 @@ import (
 type ChaosParams struct {
 	x float64
 	k float64
-
 	initalIter uint
 	dy float64
 	n uint
@@ -38,15 +37,17 @@ func Help() {
 }
 
 func Chaos(args []string) {
-	if len(args) == 0 {
+	// TODO: change to `--help` on first
+	if len(args) == 1 && (args[0] == "-h" || args[0] == "--help") {
 		Help()
 		return
 	}
 	params := GetParams(args)
 	Run(params)
+
 }
 
-func Run(p *ChaosParams) {
+func Run(p *ChaosParams) *IterationState{
 	x := p.x
 	k := p.k
 	// Allow pattern to stabilise
@@ -63,6 +64,7 @@ func Run(p *ChaosParams) {
 	}
 	state.UpdatePattern()
 	fmt.Println(state.pattern)
+	return state
 }
 
 func ConstructIterationState(p *ChaosParams) *IterationState{
