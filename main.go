@@ -22,12 +22,12 @@ func main() {
 	}
 
 	switch os.Args[1] {
-		case Chaos:
-			chaos.Chaos(os.Args[2:])
+	case Chaos:
+		chaos.Chaos(os.Args[2:])
 
-		default:
-			ListCommands()
-			return
+	default:
+		ListCommands()
+		return
 	}
 
 }
