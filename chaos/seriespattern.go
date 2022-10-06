@@ -2,8 +2,8 @@ package chaos
 
 import "math"
 
-
 type SeriesPattern int64
+
 const (
 	Divergent SeriesPattern = iota
 	Convergent
@@ -11,6 +11,7 @@ const (
 	Intermittency
 	Chaotic
 )
+
 // SeriesChecks is list of functions where the i'th State check returns true iff pattern is SeriesPattern(i)
 // Chaotic must be last check. Chaotic if no other pattern found.
 var seriesChecks = []func([]float64) bool{isDivergent, isConvergent, isPeriodic, isFalse, isTrue}
@@ -31,7 +32,7 @@ func (p SeriesPattern) ToString() string {
 }
 
 func isFalse(x []float64) bool { return false }
-func isTrue(x []float64) bool { return true }
+func isTrue(x []float64) bool  { return true }
 
 func isPeriodic(x []float64) bool {
 

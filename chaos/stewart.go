@@ -11,19 +11,19 @@ import (
 //	x_{i+1} = kx_i**2 -1
 
 func GetChaosStewartFlags(p *StewartParams) *flag.FlagSet {
-	fs := flag.NewFlagSet("stewart", flag.ExitOnError)
+	fs := flag.NewFlagSet(Stewart, flag.ExitOnError)
 	fs.Float64Var(&p.x, "x", 0.42, "Parameter of the recursive formula kx**2 -1")
 	fs.Float64Var(&p.k, "k", 1.24, "Parameter of the recursive formula kx**2 -1")
-	fs.UintVar(&p.hyper.initalIter, "initial-iterations", 50, "Number of initial iterations " +
+	fs.UintVar(&p.hyper.initalIter, "initial-iterations", 50, "Number of initial iterations "+
 		"before considering output")
-	fs.UintVar(&p.hyper.maxSeriesLen, "maxSeriesLen", 9, "Size of series to consider " +
+	fs.UintVar(&p.hyper.maxSeriesLen, "maxSeriesLen", 9, "Size of series to consider "+
 		"periodicities and other patterns within. Patterns greater than this will be considered chaotic")
 	return fs
 }
 
 type StewartParams struct {
-	x float64
-	k float64
+	x     float64
+	k     float64
 	hyper *HyperParams
 }
 
@@ -44,7 +44,7 @@ func StewartExample(args []string) {
 	// Make specific recursive function based on parameter, k
 	metaRecurse := func(k float64) func(x float64) float64 {
 		return func(x float64) float64 {
-			return params.k*math.Pow(x, 2) - 1.0
+			return k*math.Pow(x, 2) - 1.0
 		}
 	}
 	r := Run(params.x, metaRecurse(params.k), params.hyper.initalIter, params.hyper.maxSeriesLen)

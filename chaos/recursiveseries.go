@@ -2,7 +2,7 @@ package chaos
 
 // Run attempts to find the pattern of a recursive function applied to an initial value.
 func Run(x float64, recurse func(float64) float64, initialIterations, maxPeriodicity uint) *SeriesResult {
-	path := make(chan float64, initialIterations + maxPeriodicity + 1)
+	path := make(chan float64, initialIterations+maxPeriodicity+1)
 	defer close(path)
 
 	path <- x
@@ -31,13 +31,13 @@ func Run(x float64, recurse func(float64) float64, initialIterations, maxPeriodi
 }
 
 type SeriesResult struct {
-	v chan float64
+	v       chan float64
 	pattern SeriesPattern
 }
 
 type IterationState struct {
 	previousN []float64
-	k int
+	k         int
 }
 
 // AddIteration adds the value to the previous list.
